@@ -96,7 +96,9 @@ public class DialogManager {
                         finished = true;
                         break;
                     case 5:
-                        out.add(Message.knowledgeTree(Node.getRoot(node)));
+//                        out.add(Message.knowledgeTree(Node.getRoot(node)));
+//                        Message.printTree(Node.getRoot(node));
+                        out.add(Message.buildTree(Node.getRoot(node)));
                         finished = true;
                         break;
                     case 0:

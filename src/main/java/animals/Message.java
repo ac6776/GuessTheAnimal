@@ -163,6 +163,10 @@ public class Message {
     }
 
     public static String searchAnimal(String input, Node root) {
+//        String name = input;
+//        if (input.matches("a|an [a-zA-Z]+")) {
+//            name = input.split("\\s")[1];
+//        }
         StringBuilder sb = new StringBuilder();
         List<Node> leaves = Node.getLeaves(root);
         Node animal = leaves.stream()
@@ -170,7 +174,7 @@ public class Message {
                 .findFirst()
                 .orElse(null);
         if (animal != null) {
-           return listFacts(animal);
+           return String.format("Facts about the %s:\n", input) + listFacts(animal);
         }
         return String.format("No facts about the %s.", getAnimal(input).split("\\s")[1]);
     }
@@ -231,7 +235,16 @@ public class Message {
                 root.getVal(), totalNum, animalsNum, statementsNum, height, minDepth, averageDepth);
     }
 
-    public static String knowledgeTree(Node root) {
-        return "└ " + root.getVal();
+    private static String buildTree(Node node, int count) {
+        if (node == null) {
+            return "";
+        }
+        String val = String.format("%s└ %s\n", " ".repeat(count), node.getVal());
+        return val + buildTree(node.getYes(), count+1) + buildTree(node.getNo(), count+1);
     }
+
+    public static String buildTree(Node root) {
+        return buildTree(root, 0);
+    }
+
 }

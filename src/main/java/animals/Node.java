@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lombok.Data;
 
 import java.util.LinkedList;
 import java.util.List;
 
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Node {
     private String val;
@@ -18,40 +20,13 @@ public class Node {
     @JsonManagedReference
     private Node no;
 
+    public  Node() {
+
+    }
+
     public Node(String val, Node parent) {
         this.val = val;
         this.parent = parent;
-    }
-
-    public Node() {
-    }
-
-    public String getVal() {
-        return val;
-    }
-
-    public void setVal(String val) {
-        this.val = val;
-    }
-
-    public Node getYes() {
-        return yes;
-    }
-
-    public void setYes(Node yes) {
-        this.yes = yes;
-    }
-
-    public Node getNo() {
-        return no;
-    }
-
-    public void setNo(Node no) {
-        this.no = no;
-    }
-
-    public Node getParent() {
-        return parent;
     }
 
     @JsonIgnore
@@ -127,4 +102,6 @@ public class Node {
         }
         return 1 + depth(node.parent);
     }
+
+
 }

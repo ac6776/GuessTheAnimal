@@ -1,3 +1,21 @@
 {
-  "val" : "a 1"
+  "val" : "It can climb trees",
+  "yes" : {
+    "val" : "It can eat bananas",
+    "yes" : {
+      "val" : "a monkey"
+    },
+    "no" : {
+      "val" : "a cat"
+    }
+  },
+  "no" : {
+    "val" : "It is a mammal",
+    "yes" : {
+      "val" : "a dog"
+    },
+    "no" : {
+      "val" : "a shark"
+    }
+  }
 }
