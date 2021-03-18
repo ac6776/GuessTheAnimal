@@ -149,73 +149,59 @@ public class Message {
     }
 
     public static String getListOfAnimal(Node root) {
-        StringBuilder sb = new StringBuilder("Here are the animals I know:\n");
+        StringBuilder sb = new StringBuilder("Here are the animals I know:");
         List<Node> leaves = Node.getLeaves(root);
         List<String> values = new LinkedList<>();
         for (Node leaf : leaves) {
-            values.add(leaf.getVal());
+            values.add(leaf.getVal().split("\\s")[1]);
         }
         Collections.sort(values);
         for (String leaf : values) {
-            sb.append(" - ").append(leaf).append("\n");
+            sb.append("\n - ").append(leaf);
         }
         return sb.toString();
     }
 
-    public static String searchAnimal(String input, Node root) {
-//        String name = input;
-//        if (input.matches("a|an [a-zA-Z]+")) {
-//            name = input.split("\\s")[1];
-//        }
+    private static boolean hasNode(String txt, Node node, LinkedList<Node> path) {
+        if (node == null) {
+            return false;
+        }
+        path.add(node);
+        if (node.getVal().equals(txt)) {
+            return true;
+        }
+        if (hasNode(txt, node.getYes(), path) || hasNode(txt, node.getNo(), path)) {
+            return true;
+        }
+        path.removeLast();
+        return false;
+    }
+
+    public static String buildPath(String txt, Node node) {
         StringBuilder sb = new StringBuilder();
-        List<Node> leaves = Node.getLeaves(root);
-        Node animal = leaves.stream()
-                .filter(val -> val.getVal().contains(input.toLowerCase()))
-                .findFirst()
-                .orElse(null);
-        if (animal != null) {
-           return String.format("Facts about the %s:\n", input) + listFacts(animal);
+        LinkedList<Node> path = new LinkedList<>();
+        if (hasNode(txt, node, path)) {
+            sb.append(String.format("Facts about the %s:", txt.split("\\s")[1]));
+            for (int i = 0; i < path.size() - 1; i++) {
+                sb.append("\n");
+                if (path.get(i).getYes() == path.get(i+1)) {
+                    sb.append(String.format(" - %s.", path.get(i).getVal()));
+                } else {
+                    String[] fact = getFact(path.get(i).getVal());
+                    if (fact == null) {
+                        return "Something went wrong";
+                    }
+                    String verb = fact[0];
+                    String sentence = fact[1];
+                    sb.append(String.format(" - It %s %s.", getVerb(verb, false), sentence));
+                }
+            }
+        } else {
+            sb.append(String.format("No facts about the %s.", getAnimal(txt).split("\\s")[1]));
         }
-        return String.format("No facts about the %s.", getAnimal(input).split("\\s")[1]);
+        return sb.toString();
     }
 
-//    private static String listFacts(StringBuilder sb, Node node) {
-//        if (node.getParent() == null) {
-//            return sb.toString();
-//        }
-//        sb.append(node.getVal()).append("\n");
-//        return listFacts(sb, node.getParent());
-//    }
-
-    private static String listFacts(Node node) {
-        if (node.getParent() == null) {
-            return "\n";
-        }
-        return node.getParent().getVal() + "\n" + listFacts(node.getParent());
-    }
-
-//    public static void printFacts(Node node, String txt) {
-//        if (node.isLeaf()) {
-//            return;
-//        }
-//        printFacts(node.getYes(), txt);
-//        printFacts(node.getNo(), txt);
-//        System.out.println(node.getVal());
-//    }
-
-//    public static String printFacts(Node node, String txt) {
-//        if (node.getYes() )
-//        if (node)
-//        if (node.isLeaf()) {
-//            return "";
-//        }
-//        if (node.getVal().equals(txt)) {
-//
-//        }
-//        printFacts(node.getYes(), txt);
-//        printFacts(node.getNo(), txt);
-//        System.out.println(node.getVal());
-//    }
     public static String calculateStatistic(Node root) {
         int totalNum = Node.getAll(root).size();
         int animalsNum = Node.getLeaves(root).size();
@@ -246,5 +232,4 @@ public class Message {
     public static String buildTree(Node root) {
         return buildTree(root, 0);
     }
-
 }

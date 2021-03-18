@@ -112,8 +112,10 @@ public class DialogManager {
                 break;
             case SEARCH_ANIMAL:
                 String search = Message.getAnimal(input);
-                out.add(Message.searchAnimal(search, Node.getRoot(node)));
+//                out.add(Message.searchAnimal(search, Node.getRoot(node)));
 //                Message.printFacts(Node.getRoot(node), search);
+//                Message.printPath(search, Node.getRoot(node));
+                out.add(Message.buildPath(search, Node.getRoot(node)));
                 finished = true;
                 break;
             case GUESSING_ANIMAL:
