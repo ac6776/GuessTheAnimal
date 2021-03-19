@@ -6,7 +6,13 @@
       "val" : "a monkey"
     },
     "no" : {
-      "val" : "a cat"
+      "val" : "It can sleep all day long",
+      "yes" : {
+        "val" : "a coala"
+      },
+      "no" : {
+        "val" : "a cat"
+      }
     }
   },
   "no" : {
@@ -15,7 +21,13 @@
       "val" : "a dog"
     },
     "no" : {
-      "val" : "a shark"
+      "val" : "It can fly",
+      "yes" : {
+        "val" : "a bird"
+      },
+      "no" : {
+        "val" : "a shark"
+      }
     }
   }
 }

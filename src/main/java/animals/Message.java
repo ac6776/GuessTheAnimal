@@ -225,7 +225,16 @@ public class Message {
         if (node == null) {
             return "";
         }
-        String val = String.format("%s└ %s\n", " ".repeat(count), node.getVal());
+        String val;
+        if (node.getParent() != null) {
+            if (node.getParent().getYes() == node) {
+                val = String.format("%s├ %s\n", " ".repeat(count), node.getVal());
+            } else {
+                val = String.format("%s└ %s\n", " ".repeat(count), node.getVal());
+            }
+        } else {
+            val = String.format("%s└ %s\n", " ".repeat(count), node.getVal());
+        }
         return val + buildTree(node.getYes(), count+1) + buildTree(node.getNo(), count+1);
     }
 
