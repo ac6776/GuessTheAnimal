@@ -239,6 +239,31 @@ public class Message {
     }
 
     public static String buildTree(Node root) {
-        return buildTree(root, 0);
+        StringBuilder sb = new StringBuilder();
+        String[] tree = buildTree(root, 0).split("\n");
+        sb.append(tree[0]);
+        for (int i = 1; i < tree.length; i++) {
+            int j = getJ(tree[i]);
+            if (j != -1) {
+                int k = i;
+                while (tree[k].charAt(j) != '└') {
+                    if (tree[k].charAt(j) == ' ') {
+                        tree[k] = tree[k].substring(0, j) + "|" + tree[k].substring(j + 1);
+                    }
+                    k++;
+                }
+            }
+            sb.append("\n").append(tree[i]);
+        }
+        return sb.toString();
+    }
+
+    private static int getJ(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            if (str.charAt(i) == '├') {
+                return i;
+            }
+        }
+        return -1;
     }
 }
