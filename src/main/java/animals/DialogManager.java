@@ -197,8 +197,19 @@ public class DialogManager {
                             "Press enter when you're ready.");
                     state = State.PRESS_ENTER;
                 } else if (answer.contains("No")) {
-                    out.add("\n" + Message.onExit());
-                    finished = true;
+//                    out.add("\n" + Message.onExit());
+//                    finished = true;
+                    state = State.MAIN_MENU;
+                    out.add("Welcome to the animal expert system!\n" +
+                            "\n" +
+                            "What do you want to do:\n" +
+                            "\n" +
+                            "1. Play the guessing game\n" +
+                            "2. List of all animals\n" +
+                            "3. Search for an animal\n" +
+                            "4. Calculate statistics\n" +
+                            "5. Print the Knowledge Tree\n" +
+                            "0. Exit");
                 } else {
                     out.add(answer);
                 }
