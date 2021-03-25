@@ -1,7 +1,9 @@
 package animals;
 
+import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class DialogManager {
     private final List<String> out;
@@ -19,22 +21,16 @@ public class DialogManager {
         out = new LinkedList<>();
         if (node == null) {
             state = State.INPUT_FIRST_ANIMAL;
-            out.addAll(List.of(Message.greeting(),
-                    "I want to learn about animals.",
-                    "Which animal do you like most?"));
+            out.addAll(List.of(
+                    Message.get("greeting"),
+                    Message.get("animal.wantLearn"),
+                    Message.get("animal.askFavorite")));
         } else {
             this.node = node;
-//            this.root = node;
-            out.add("Welcome to the animal expert system!\n" +
-                    "\n" +
-                    "What do you want to do:\n" +
-                    "\n" +
-                    "1. Play the guessing game\n" +
-                    "2. List of all animals\n" +
-                    "3. Search for an animal\n" +
-                    "4. Calculate statistics\n" +
-                    "5. Print the Knowledge Tree\n" +
-                    "0. Exit");
+            out.addAll(List.of(
+                    Message.get("welcome"),
+                    Message.get("menu.property.title"),
+                    Message.get("menu")));
             state = State.MAIN_MENU;
         }
     }
@@ -42,28 +38,23 @@ public class DialogManager {
     public void in(String input) {
         switch (state) {
             case INPUT_FIRST_ANIMAL:
-                animal1 = Message.getAnimal(input);
+//                if (input.matches(Message.getPattern("animal.isCorrect"))) {
+//                    System.out.println(input);
+//                }
+//                animal1 = Message.getAnimal(input);
+                animal1 = Message.applyRule("animal", input);
+//                System.out.println(animal1);
                 node = new Node(animal1, null);
-//                state = State.PRESS_ENTER;
-//                out.add("Wonderful! I've learned so much about animals!");
-//                out.add("Let's play a game!\n" +
-//                        "You think of an animal, and I guess it.\n" +
-//                        "Press enter when you're ready.");
                 state = State.MAIN_MENU;
-                out.add("Welcome to the animal expert system!\n" +
-                        "\n" +
-                        "What do you want to do:\n" +
-                        "\n" +
-                        "1. Play the guessing game\n" +
-                        "2. List of all animals\n" +
-                        "3. Search for an animal\n" +
-                        "4. Calculate statistics\n" +
-                        "5. Print the Knowledge Tree\n" +
-                        "0. Exit");
+                out.addAll(List.of(
+                        Message.get("welcome"),
+                        Message.get("menu.property.title"),
+                        Message.get("menu")));
                 break;
             case PRESS_ENTER:
                 if (input.length() == 0) {
-                    String question = Message.getDistinguishQuestion(node);
+//                    String question = Message.getDistinguishQuestion(node);
+                    String question = Message.applyRule(node.isLeaf() ? "guessAnimal" : "question", node.getVal());
                     out.add(question);
                     state = State.GUESSING_ANIMAL;
                 }
@@ -73,14 +64,16 @@ public class DialogManager {
                 try {
                     selection = Integer.parseInt(input);
                 } catch (NumberFormatException e) {
-                    out.add("Not a number");
+                    out.add(Message.get("menu.property.error", 5));
                     e.printStackTrace();
                     break;
                 }
                 switch (selection) {
                     case 1:
-                        out.add("You think of an animal, and I guess it.\n" +
-                            "Press enter when you're ready.");
+                        out.addAll(List.of(
+                                Message.get("game.letsPlay"),
+                                Message.get("game.think"),
+                                Message.get("game.enter")));
                         state = State.PRESS_ENTER;
                         break;
                     case 2:
@@ -88,7 +81,7 @@ public class DialogManager {
                         finished = true;
                         break;
                     case 3:
-                        out.add("Enter the animal:");
+                        out.add(Message.get("animal.prompt"));
                         state = State.SEARCH_ANIMAL;
                         break;
                     case 4:
@@ -96,8 +89,6 @@ public class DialogManager {
                         finished = true;
                         break;
                     case 5:
-//                        out.add(Message.knowledgeTree(Node.getRoot(node)));
-//                        Message.printTree(Node.getRoot(node));
                         out.add(Message.buildTree(Node.getRoot(node)));
                         finished = true;
                         break;
@@ -106,15 +97,12 @@ public class DialogManager {
                         finished = true;
                         break;
                     default:
-                        out.add("Oops, you have entered wrong number. Please, try again.");
+                        out.add(Message.get("menu.property.error", 5));
                         break;
                 }
                 break;
             case SEARCH_ANIMAL:
                 String search = Message.getAnimal(input);
-//                out.add(Message.searchAnimal(search, Node.getRoot(node)));
-//                Message.printFacts(Node.getRoot(node), search);
-//                Message.printPath(search, Node.getRoot(node));
                 out.add(Message.buildPath(search, Node.getRoot(node)));
                 finished = true;
                 break;
@@ -122,8 +110,8 @@ public class DialogManager {
                 String answer = Message.checkAnswer(input);
                 if (answer.contains("Yes")) {
                     if (node.getYes() == null) {
-                        out.add("Well done!");
-                        out.add("Would you like to play again?");
+                        out.add(Message.get("game.win"));
+                        out.add(Message.get("game.again"));
                         state = State.PLAY_AGAIN;
                     } else {
                         node = node.getYes();
@@ -132,7 +120,7 @@ public class DialogManager {
                 } else if (answer.contains("No")) {
                     if (node.getNo() == null) {
                         animal1 = node.getVal();
-                        out.add("I give up. What animal do you have in mind?");
+                        out.add(Message.get("game.giveUp"));
                         state = State.INPUT_SECOND_ANIMAL;
                     } else {
                         node = node.getNo();
@@ -145,27 +133,18 @@ public class DialogManager {
             case INPUT_SECOND_ANIMAL:
                 animal2 = Message.getAnimal(input);
                 state = State.INPUT_FACT;
-                out.add(String.format("Specify a fact that distinguishes %s from %s.",
-                        animal1,
-                        animal2));
-                out.add("The sentence should be of the format: 'It can/has/is ...'.");
+                out.add(Message.get("statement.prompt", animal1, animal2));
                 break;
             case INPUT_FACT:
                 fact = Message.getFact(input);
                 if (fact != null) {
                     state = State.INPUT_ANSWER;
-                    out.add(String.format("Is the statement correct for %s?",
-                            animal2));
+                    out.add(Message.get("game.isCorrect", animal2));
                     break;
                 }
-                out.add("The examples of a statement:\n" +
-                        " - It can fly\n" +
-                        " - It has horn\n" +
-                        " - It is a mammal");
-                out.add(String.format("Specify a fact that distinguishes %s from %s.",
-                        animal1,
-                        animal2));
-                out.add("The sentence should be of the format: 'It can/has/is ...'.");
+                out.addAll(List.of(
+                        Message.get("statement.error"),
+                        Message.get("statement.prompt", animal1, animal2)));
                 break;
             case INPUT_ANSWER:
                 answer = Message.checkAnswer(input);
@@ -179,12 +158,12 @@ public class DialogManager {
                         node.setYes(new Node(animal1, node));
                         node.setNo(new Node(animal2, node));
                     }
-                    out.add("I have learned the following facts about animals:");
+                    out.add(Message.get("game.learned"));
                     out.add("- The " + animal1.split("\\s")[1] + " " + Message.getVerb(fact[0], !animal2Is) + " " + fact[1] + ".");
                     out.add("- The " + animal2.split("\\s")[1] + " " + Message.getVerb(fact[0], animal2Is) + " " + fact[1] + ".");
-                    out.add("I can distinguish these animals by asking the question:");
+                    out.add(Message.get("game.distinguish"));
                     out.add("- " + Message.getDistinguishQuestion(fact[0], fact[1]));
-                    out.add("Would you like to play again?");
+                    out.add(Message.get("game.again"));
                     state = State.PLAY_AGAIN;
                 } else {
                     out.add(answer);
@@ -193,23 +172,16 @@ public class DialogManager {
             case PLAY_AGAIN:
                 answer = Message.checkAnswer(input);
                 if (answer.contains("Yes")) {
-                    out.add("You think of an animal, and I guess it.\n" +
-                            "Press enter when you're ready.");
+                    out.addAll(List.of(
+                            Message.get("game.think"),
+                            Message.get("game.enter")));
                     state = State.PRESS_ENTER;
                 } else if (answer.contains("No")) {
-//                    out.add("\n" + Message.onExit());
-//                    finished = true;
                     state = State.MAIN_MENU;
-                    out.add("Welcome to the animal expert system!\n" +
-                            "\n" +
-                            "What do you want to do:\n" +
-                            "\n" +
-                            "1. Play the guessing game\n" +
-                            "2. List of all animals\n" +
-                            "3. Search for an animal\n" +
-                            "4. Calculate statistics\n" +
-                            "5. Print the Knowledge Tree\n" +
-                            "0. Exit");
+                    out.addAll(List.of(
+                            Message.get("welcome"),
+                            Message.get("menu.property.title"),
+                            Message.get("menu")));
                 } else {
                     out.add(answer);
                 }

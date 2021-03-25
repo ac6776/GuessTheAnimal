@@ -1,42 +1,115 @@
 package animals;
 
+import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Message {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("message");
+    private static final Pattern DELIMITER = Pattern.compile("\\f");
+    private static final Random random = new Random();
+    private static final ResourceBundle rules = ResourceBundle.getBundle("patterns");
+    private static final Map<String, Pattern> patterns;
+
+    static {
+        patterns = new HashMap<>();
+        Set<String> keys = rules.keySet();
+        for (String key : keys) {
+            if (!key.endsWith(".replace")) {
+                patterns.put(key, Pattern.compile(rules.getString(key)));
+            }
+        }
+    }
 
     private Message() {}
 
-    public static String greeting() {
+//    public static String getPattern(String key, Object... args) {
+//        return MessageFormat.format(rules.getString(key), args);
+//    }
+
+    public static String applyRule(String rule, String value) {
+        for (int i = 1; ; i++) {
+            String key = rule + "." + i;
+            Pattern pattern = patterns.get(key  + ".pattern");
+            if (pattern == null) {
+                return value;
+            }
+            Matcher matcher = pattern.matcher(value);
+            if(matcher.matches()) {
+                return matcher.replaceFirst(rules.getString(key + ".replace"));
+            }
+        }
+    }
+
+    public static String get(String key, Object... args) {
+        if (key.equals("greeting")) {
+            return greetByTime();
+        }
+        if (key.equals("menu")) {
+            return menu();
+        }
+        return getText(key, args);
+    }
+
+    private static String getText(String key, Object... args) {
+        String[] strings = DELIMITER.split(bundle.getString(key));
+        return MessageFormat.format(strings[random.nextInt(strings.length)], args);
+    }
+
+    private static String menu() {
+        return String.format("1. %s\n2. %s\n3. %s\n4. %s\n5. %s\n0. %s",
+                get("menu.entry.play"),
+                get("menu.entry.list"),
+                get("menu.entry.search"),
+                get("menu.entry.statistics"),
+                get("menu.entry.print"),
+                get("menu.property.exit"));
+
+    }
+
+    private static String greetByTime() {
+        String greeting = "";
         LocalTime time = LocalTime.now();
-        if (time.isAfter(LocalTime.of(4, 59, 59)) &&
-                time.isBefore(LocalTime.of(12, 0))) {
-            return "Good morning";
+        String[] timeKeys = {"morning.time.after",
+                "morning.time.before",
+                "afternoon.time.after",
+                "afternoon.time.before",
+                "evening.time.after",
+                "night.time.before",
+                "early.time.after",
+                "early.time.before"};
+        Map<String, LocalTime> map = new HashMap<>();
+        for (int i = 0; i < timeKeys.length; i++) {
+            map.put(timeKeys[i], getTime(timeKeys[i]));
         }
-        if (time.isAfter(LocalTime.of(11, 59, 59)) &&
-                time.isBefore(LocalTime.of(18, 0))) {
-            return "Good afternoon";
+        if (time.isAfter(map.get(timeKeys[0])) && time.isBefore(map.get(timeKeys[1]))) {
+            greeting = get("greeting.morning");
         }
-        return "Good evening";
+        if (time.isAfter(map.get(timeKeys[2])) && time.isBefore(map.get(timeKeys[3]))) {
+            greeting = get("greeting.afternoon");
+        }
+        if (time.isAfter(map.get(timeKeys[4]))) {
+            greeting = get("greeting.evening");
+        }
+        if (time.isBefore(map.get(timeKeys[5]))) {
+            greeting = get("greeting.night");
+        }
+        if (time.isAfter(map.get(timeKeys[6])) && time.isBefore(map.get(timeKeys[7]))) {
+            greeting = get("greeting.early");
+        }
+        return new String[]{getText("greeting"), greeting}[random.nextInt(2)];
     }
 
-    private static String clarify() {
-        List<String> list = List.of("I'm not sure I caught you: was it yes or no?",
-                "Funny, I still don't understand, is it yes or no?",
-                "Oh, it's too complicated for me: just tell me yes or no.",
-                "Could you please simply say yes or no?",
-                "Oh, no, don't try to confuse me: say yes or no.");
-        return getRandom(list);
+
+    private static LocalTime getTime(String key) {
+        return LocalTime.parse(bundle.getString(key));
     }
 
-    private static String getRandom(List<String> messages) {
-        return messages.get(new Random().nextInt(messages.size()));
-    }
+//    private static String clarify() {
+//        return getMessage("ask.again");
+//    }
 
     public static String checkAnswer(String answer) {
         Pattern pattern = Pattern.compile("([a-z ']+)([!.])?", Pattern.CASE_INSENSITIVE);
@@ -49,7 +122,8 @@ public class Message {
                 return "You answered: No";
             }
         }
-        return clarify();
+//        return clarify();
+        return "";
     }
 
     private static List<String> possibleYes() {
@@ -109,7 +183,8 @@ public class Message {
                 "Bye, Bye!",
                 "Bye!",
                 "See you soon!");
-        return getRandom(list);
+//        return getRandom(list);
+        return "";
     }
 
     public static String getVerb(String verb, boolean is) {
@@ -154,6 +229,7 @@ public class Message {
         List<String> values = new LinkedList<>();
         for (Node leaf : leaves) {
             values.add(leaf.getVal().split("\\s")[1]);
+//            values.add(leaf.getVal().split("\\s")[0]);
         }
         Collections.sort(values);
         for (String leaf : values) {
