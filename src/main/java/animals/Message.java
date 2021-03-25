@@ -126,6 +126,14 @@ public class Message {
         return "";
     }
 
+    public static boolean isCorrect(String key, String value) {
+        Pattern pattern = patterns.get(key + ".isCorrect");
+        if (pattern == null) {
+            return false;
+        }
+        return pattern.matcher(value).matches();
+    }
+
     private static List<String> possibleYes() {
         return List.of(
                 "y",

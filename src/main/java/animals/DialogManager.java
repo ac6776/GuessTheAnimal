@@ -77,6 +77,7 @@ public class DialogManager {
                         state = State.PRESS_ENTER;
                         break;
                     case 2:
+                        //todo
                         out.add(Message.getListOfAnimal(node));
                         finished = true;
                         break;
@@ -85,6 +86,7 @@ public class DialogManager {
                         state = State.SEARCH_ANIMAL;
                         break;
                     case 4:
+                        //todo
                         out.add(Message.calculateStatistic(Node.getRoot(node)));
                         finished = true;
                         break;
@@ -93,7 +95,7 @@ public class DialogManager {
                         finished = true;
                         break;
                     case 0:
-                        out.add("\n" + Message.onExit());
+                        out.add("\n" + Message.get("farewell"));
                         finished = true;
                         break;
                     default:
@@ -102,11 +104,13 @@ public class DialogManager {
                 }
                 break;
             case SEARCH_ANIMAL:
+                //todo#1
                 String search = Message.getAnimal(input);
                 out.add(Message.buildPath(search, Node.getRoot(node)));
                 finished = true;
                 break;
             case GUESSING_ANIMAL:
+                //todo
                 String answer = Message.checkAnswer(input);
                 if (answer.contains("Yes")) {
                     if (node.getYes() == null) {
@@ -115,6 +119,7 @@ public class DialogManager {
                         state = State.PLAY_AGAIN;
                     } else {
                         node = node.getYes();
+                        //todo
                         out.add(Message.getDistinguishQuestion(node));
                     }
                 } else if (answer.contains("No")) {
@@ -124,20 +129,24 @@ public class DialogManager {
                         state = State.INPUT_SECOND_ANIMAL;
                     } else {
                         node = node.getNo();
+                        //todo
                         out.add(Message.getDistinguishQuestion(node));
                     }
                 } else {
+                    //todo
                     out.add(answer);
                 }
                 break;
             case INPUT_SECOND_ANIMAL:
-                animal2 = Message.getAnimal(input);
+//                animal2 = Message.getAnimal(input);
+                animal2 = Message.applyRule("animal", input);
                 state = State.INPUT_FACT;
                 out.add(Message.get("statement.prompt", animal1, animal2));
                 break;
             case INPUT_FACT:
-                fact = Message.getFact(input);
-                if (fact != null) {
+//                fact = Message.getFact(input);
+                boolean statementIsCorrect = Message.isCorrect("statement", input);
+                if (statementIsCorrect) {
                     state = State.INPUT_ANSWER;
                     out.add(Message.get("game.isCorrect", animal2));
                     break;
@@ -147,6 +156,7 @@ public class DialogManager {
                         Message.get("statement.prompt", animal1, animal2)));
                 break;
             case INPUT_ANSWER:
+                //todo
                 answer = Message.checkAnswer(input);
                 if (answer.contains("Yes") || answer.contains("No")) {
                     boolean animal2Is = answer.contains("Yes");
