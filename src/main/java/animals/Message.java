@@ -134,6 +134,15 @@ public class Message {
         return pattern.matcher(value).matches();
     }
 
+    public static String getFacts(String animal1, String animal2, String fact, boolean isCorrect) {
+        return get("game.learned") +
+                    "\n- " + applyRule("definite", animal1) + " " + applyRule("animalFact", applyRule(isCorrect ? "negative" : "statement", fact)) + "." +
+                    "\n- " + applyRule("definite", animal2) + " " + applyRule("animalFact", applyRule(!isCorrect ? "negative" : "statement", fact)) + "." +
+                    "\n" + Message.get("game.distinguish") +
+                    "\n- " + Message.applyRule("question", fact) +
+                    "\n" + Message.get("game.again");
+    }
+
     private static List<String> possibleYes() {
         return List.of(
                 "y",

@@ -11,7 +11,8 @@ public class DialogManager {
     private boolean finished;
     private String animal1;
     private String animal2;
-    private String[] fact;
+//    private String[] fact;
+    private String fact;
     private Node node;
 //    private Node root;
 
@@ -110,43 +111,38 @@ public class DialogManager {
                 finished = true;
                 break;
             case GUESSING_ANIMAL:
-                //todo
-                String answer = Message.checkAnswer(input);
-                if (answer.contains("Yes")) {
-                    if (node.getYes() == null) {
+                if (Message.isCorrect("positiveAnswer", input)) {
+                    if (node.isLeaf()) {
                         out.add(Message.get("game.win"));
                         out.add(Message.get("game.again"));
                         state = State.PLAY_AGAIN;
                     } else {
                         node = node.getYes();
-                        //todo
-                        out.add(Message.getDistinguishQuestion(node));
+//                        out.add(Message.getDistinguishQuestion(node));
+                        out.add(Message.applyRule("question", node.getVal()));
                     }
-                } else if (answer.contains("No")) {
-                    if (node.getNo() == null) {
+                } else if (Message.isCorrect("negativeAnswer", input)) {
+                    if (node.isLeaf()) {
                         animal1 = node.getVal();
                         out.add(Message.get("game.giveUp"));
                         state = State.INPUT_SECOND_ANIMAL;
                     } else {
                         node = node.getNo();
-                        //todo
-                        out.add(Message.getDistinguishQuestion(node));
+//                        out.add(Message.getDistinguishQuestion(node));
+                        out.add(Message.applyRule("question", node.getVal()));
                     }
                 } else {
-                    //todo
-                    out.add(answer);
+                    out.add(Message.get("ask.again"));
                 }
                 break;
             case INPUT_SECOND_ANIMAL:
-//                animal2 = Message.getAnimal(input);
                 animal2 = Message.applyRule("animal", input);
                 state = State.INPUT_FACT;
                 out.add(Message.get("statement.prompt", animal1, animal2));
                 break;
             case INPUT_FACT:
-//                fact = Message.getFact(input);
-                boolean statementIsCorrect = Message.isCorrect("statement", input);
-                if (statementIsCorrect) {
+                if (Message.isCorrect("statement", input)) {
+                    fact = input;
                     state = State.INPUT_ANSWER;
                     out.add(Message.get("game.isCorrect", animal2));
                     break;
@@ -156,44 +152,32 @@ public class DialogManager {
                         Message.get("statement.prompt", animal1, animal2)));
                 break;
             case INPUT_ANSWER:
-                //todo
-                answer = Message.checkAnswer(input);
-                if (answer.contains("Yes") || answer.contains("No")) {
-                    boolean animal2Is = answer.contains("Yes");
-                    node.setVal("It " + fact[0] + " " + fact[1]);
-                    if (animal2Is) {
-                        node.setYes(new Node(animal2, node));
-                        node.setNo(new Node(animal1, node));
-                    } else {
-                        node.setYes(new Node(animal1, node));
-                        node.setNo(new Node(animal2, node));
-                    }
-                    out.add(Message.get("game.learned"));
-                    out.add("- The " + animal1.split("\\s")[1] + " " + Message.getVerb(fact[0], !animal2Is) + " " + fact[1] + ".");
-                    out.add("- The " + animal2.split("\\s")[1] + " " + Message.getVerb(fact[0], animal2Is) + " " + fact[1] + ".");
-                    out.add(Message.get("game.distinguish"));
-                    out.add("- " + Message.getDistinguishQuestion(fact[0], fact[1]));
-                    out.add(Message.get("game.again"));
+                boolean yes = Message.isCorrect("positiveAnswer", input);
+                boolean no = Message.isCorrect("negativeAnswer", input);
+                if (yes || no) {
+                    node.setVal(Message.applyRule("statement", fact));
+                    node.setYes(new Node(yes ? animal2 : animal1, node));
+                    node.setNo(new Node(yes ? animal1 : animal2, node));
+                    out.add(Message.getFacts(animal1, animal2, fact, yes));
                     state = State.PLAY_AGAIN;
                 } else {
-                    out.add(answer);
+                    out.add(Message.get("ask.again"));
                 }
                 break;
             case PLAY_AGAIN:
-                answer = Message.checkAnswer(input);
-                if (answer.contains("Yes")) {
+                if (Message.isCorrect("positiveAnswer", input)) {
                     out.addAll(List.of(
                             Message.get("game.think"),
                             Message.get("game.enter")));
                     state = State.PRESS_ENTER;
-                } else if (answer.contains("No")) {
-                    state = State.MAIN_MENU;
+                } else if (Message.isCorrect("negativeAnswer", input)) {
                     out.addAll(List.of(
                             Message.get("welcome"),
                             Message.get("menu.property.title"),
                             Message.get("menu")));
+                    state = State.MAIN_MENU;
                 } else {
-                    out.add(answer);
+                    out.add(Message.get("ask.again"));
                 }
                 node = Node.getRoot(node);
                 break;
