@@ -1,9 +1,7 @@
 package animals;
 
-import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class DialogManager {
     private final List<String> out;
@@ -11,10 +9,8 @@ public class DialogManager {
     private boolean finished;
     private String animal1;
     private String animal2;
-//    private String[] fact;
     private String fact;
     private Node node;
-//    private Node root;
 
 
     public DialogManager(Node node) {
@@ -39,12 +35,7 @@ public class DialogManager {
     public void in(String input) {
         switch (state) {
             case INPUT_FIRST_ANIMAL:
-//                if (input.matches(Message.getPattern("animal.isCorrect"))) {
-//                    System.out.println(input);
-//                }
-//                animal1 = Message.getAnimal(input);
                 animal1 = Message.applyRule("animal", input);
-//                System.out.println(animal1);
                 node = new Node(animal1, null);
                 state = State.MAIN_MENU;
                 out.addAll(List.of(
@@ -54,14 +45,13 @@ public class DialogManager {
                 break;
             case PRESS_ENTER:
                 if (input.length() == 0) {
-//                    String question = Message.getDistinguishQuestion(node);
                     String question = Message.applyRule(node.isLeaf() ? "guessAnimal" : "question", node.getVal());
                     out.add(question);
                     state = State.GUESSING_ANIMAL;
                 }
                 break;
             case MAIN_MENU:
-                int selection = -1;
+                int selection;
                 try {
                     selection = Integer.parseInt(input);
                 } catch (NumberFormatException e) {
@@ -78,7 +68,6 @@ public class DialogManager {
                         state = State.PRESS_ENTER;
                         break;
                     case 2:
-                        //todo
                         out.add(Message.getListOfAnimal(node));
                         finished = true;
                         break;
@@ -87,7 +76,6 @@ public class DialogManager {
                         state = State.SEARCH_ANIMAL;
                         break;
                     case 4:
-                        //todo
                         out.add(Message.calculateStatistic(Node.getRoot(node)));
                         finished = true;
                         break;
@@ -105,8 +93,7 @@ public class DialogManager {
                 }
                 break;
             case SEARCH_ANIMAL:
-                //todo#1
-                String search = Message.getAnimal(input);
+                String search = Message.applyRule("animal", input);
                 out.add(Message.buildPath(search, Node.getRoot(node)));
                 finished = true;
                 break;
@@ -118,8 +105,7 @@ public class DialogManager {
                         state = State.PLAY_AGAIN;
                     } else {
                         node = node.getYes();
-//                        out.add(Message.getDistinguishQuestion(node));
-                        out.add(Message.applyRule("question", node.getVal()));
+                        out.add(Message.applyRule("guessAnimal", node.getVal()));
                     }
                 } else if (Message.isCorrect("negativeAnswer", input)) {
                     if (node.isLeaf()) {
@@ -128,8 +114,7 @@ public class DialogManager {
                         state = State.INPUT_SECOND_ANIMAL;
                     } else {
                         node = node.getNo();
-//                        out.add(Message.getDistinguishQuestion(node));
-                        out.add(Message.applyRule("question", node.getVal()));
+                        out.add(Message.applyRule("guessAnimal", node.getVal()));
                     }
                 } else {
                     out.add(Message.get("ask.again"));
@@ -191,10 +176,6 @@ public class DialogManager {
 
     public boolean isFinished() {
         return finished;
-    }
-
-    public Node getNode() {
-        return node;
     }
 
     public Node getRoot() {

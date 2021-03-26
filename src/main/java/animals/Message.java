@@ -25,10 +25,6 @@ public class Message {
 
     private Message() {}
 
-//    public static String getPattern(String key, Object... args) {
-//        return MessageFormat.format(rules.getString(key), args);
-//    }
-
     public static String applyRule(String rule, String value) {
         for (int i = 1; ; i++) {
             String key = rule + "." + i;
@@ -107,25 +103,6 @@ public class Message {
         return LocalTime.parse(bundle.getString(key));
     }
 
-//    private static String clarify() {
-//        return getMessage("ask.again");
-//    }
-
-    public static String checkAnswer(String answer) {
-        Pattern pattern = Pattern.compile("([a-z ']+)([!.])?", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(answer.trim());
-        if (matcher.matches()) {
-            if (possibleYes().contains(matcher.group(1).toLowerCase())) {
-                return "You answered: Yes";
-            }
-            if (possibleNo().contains(matcher.group(1).toLowerCase())) {
-                return "You answered: No";
-            }
-        }
-//        return clarify();
-        return "";
-    }
-
     public static boolean isCorrect(String key, String value) {
         Pattern pattern = patterns.get(key + ".isCorrect");
         if (pattern == null) {
@@ -143,110 +120,12 @@ public class Message {
                     "\n" + Message.get("game.again");
     }
 
-    private static List<String> possibleYes() {
-        return List.of(
-                "y",
-                "yes",
-                "yeah",
-                "yep",
-                "sure",
-                "right",
-                "affirmative",
-                "correct",
-                "indeed",
-                "you bet",
-                "exactly",
-                "you said it"
-        );
-    }
-
-    public static List<String> possibleNo() {
-        return List.of(
-                "n",
-                "no",
-                "no way",
-                "nah",
-                "nope",
-                "negative",
-                "i don't think so",
-                "yeah no"
-        );
-    }
-
-    public static String[] getFact(String input) {
-        Pattern pattern = Pattern.compile("(it )(can|has|is)\\s([\\w ]+)", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(input);
-        if (matcher.find()) {
-            String[] fact = new String[2];
-            do {
-                fact[0] = matcher.group(2).toLowerCase();
-                fact[1] = matcher.group(3).toLowerCase();
-            } while (matcher.find());
-            return fact;
-        }
-        return null;
-    }
-
-    public static String getAnimal(String input) {
-        if (input.matches("(?i)an?\\s[a-z]+")) {
-            return input.toLowerCase().trim();
-        }
-        String article = input.matches("(?i)[aeiouy][a-z]+") ? "an" : "a";
-        return String.format("%s %s", article, input.toLowerCase().trim());
-    }
-
-    public static String onExit() {
-        List<String> list = List.of("Have a nice day!",
-                "Bye, Bye!",
-                "Bye!",
-                "See you soon!");
-//        return getRandom(list);
-        return "";
-    }
-
-    public static String getVerb(String verb, boolean is) {
-        if (!is) {
-            switch (verb) {
-                case "can":
-                    return "can't";
-                case "has":
-                    return "doesn't have";
-                case "is":
-                    return "isn't";
-            }
-        }
-        return verb;
-    }
-
-    public static String getDistinguishQuestion(String verb, String fact) {
-        switch (verb) {
-            case "can":
-                return "Can it " + fact + "?";
-            case "has":
-                return "Does it have " + fact + "?";
-            case "is":
-                return "Is it " + fact + "?";
-        }
-        return null;
-    }
-
-    public static String getDistinguishQuestion(Node node) {
-        if (node.isLeaf()) {
-            return "Is it " + node.getVal() + "?";
-        }  else {
-            String[] fact = getFact(node.getVal());
-            assert fact != null;
-            return getDistinguishQuestion(fact[0], fact[1]);
-        }
-    }
-
     public static String getListOfAnimal(Node root) {
-        StringBuilder sb = new StringBuilder("Here are the animals I know:");
+        StringBuilder sb = new StringBuilder(get("tree.list.animals"));
         List<Node> leaves = Node.getLeaves(root);
         List<String> values = new LinkedList<>();
         for (Node leaf : leaves) {
-            values.add(leaf.getVal().split("\\s")[1]);
-//            values.add(leaf.getVal().split("\\s")[0]);
+            values.add(applyRule("animalName", leaf.getVal()));
         }
         Collections.sort(values);
         for (String leaf : values) {
@@ -270,48 +149,36 @@ public class Message {
         return false;
     }
 
-    public static String buildPath(String txt, Node node) {
+    public static String buildPath(String animal, Node node) {
         StringBuilder sb = new StringBuilder();
         LinkedList<Node> path = new LinkedList<>();
-        if (hasNode(txt, node, path)) {
-            sb.append(String.format("Facts about the %s:", txt.split("\\s")[1]));
+        if (hasNode(animal, node, path)) {
+            sb.append(get("tree.search.facts", applyRule("animalName", animal)));
             for (int i = 0; i < path.size() - 1; i++) {
                 sb.append("\n");
                 if (path.get(i).getYes() == path.get(i+1)) {
-                    sb.append(String.format(" - %s.", path.get(i).getVal()));
+                    sb.append(String.format(get("tree.search.printf"), path.get(i).getVal()));
                 } else {
-                    String[] fact = getFact(path.get(i).getVal());
-                    if (fact == null) {
-                        return "Something went wrong";
-                    }
-                    String verb = fact[0];
-                    String sentence = fact[1];
-                    sb.append(String.format(" - It %s %s.", getVerb(verb, false), sentence));
+                    sb.append(String.format(get("tree.search.printf"), applyRule("negative", path.get(i).getVal())));
                 }
             }
         } else {
-            sb.append(String.format("No facts about the %s.", getAnimal(txt).split("\\s")[1]));
+            sb.append(get("tree.search.noFacts", applyRule("animalName", animal)));
         }
         return sb.toString();
     }
 
     public static String calculateStatistic(Node root) {
-        int totalNum = Node.getAll(root).size();
-        int animalsNum = Node.getLeaves(root).size();
-        int statementsNum = totalNum - animalsNum;
-        int height = Node.height(root);
-        int minDepth = Node.minDepth(root) - 1;
-        double averageDepth = Node.averageDepth(root);
-        return String.format("The Knowledge Tree stats\n" +
-                "\n" +
-                "- root node                    %s\n" +
-                "- total number of nodes        %d\n" +
-                "- total number of animals      %d\n" +
-                "- total number of statements   %d\n" +
-                "- height of the tree           %d\n" +
-                "- minimum animal's depth       %d\n" +
-                "- average animal's depth       %.1f",
-                root.getVal(), totalNum, animalsNum, statementsNum, height, minDepth, averageDepth);
+        return get("tree.stats.title") +
+                "\n" + get("tree.stats.root", root.getVal()) +
+                "\n" + get("tree.stats.nodes", Node.getAll(root).size()) +
+                "\n" + get("tree.stats.animals", Node.getLeaves(root).size()) +
+                "\n" + get("tree.stats.statements", Node.getAll(root).size() - Node.getLeaves(root).size()) +
+                "\n" + get("tree.stats.height", Node.height(root)) +
+                "\n" + get("tree.stats.minimum", Node.minDepth(root) - 1) +
+                "\n" + get("tree.stats.average", Node.averageDepth(root));
+
+
     }
 
     private static String buildTree(Node node, int count) {
