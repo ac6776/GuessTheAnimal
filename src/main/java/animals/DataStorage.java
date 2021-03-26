@@ -1,15 +1,10 @@
 package animals;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 public class DataStorage {
-    private ObjectMapper objectMapper;
     private Type type;
     private File file;
 
@@ -20,26 +15,16 @@ public class DataStorage {
         type = Type.JSON;
         if (args.length == 2) {
             if (args[0].equalsIgnoreCase("-type")) {
-                type = Type.valueOf(args[1].toUpperCase());
+                type = Type.of(args[1].toUpperCase());
             }
         }
-        switch (type) {
-            case XML:
-                objectMapper = new XmlMapper();
-                break;
-            case YAML:
-                objectMapper = new YAMLMapper();
-                break;
-            case JSON:
-                objectMapper = new JsonMapper();
-                break;
-        }
-        file = new File("animals." + type);
+        String lang = Locale.getDefault().getLanguage().equals("en") ? "" : ("_" + Locale.getDefault().getLanguage());
+        file = new File("animals" + lang + "." + type.getExtension());
     }
 
     public void write(Node root) {
         try {
-            objectMapper
+            type.getObjectMapper()
                     .writerWithDefaultPrettyPrinter()
                     .writeValue(file, root);
         } catch (IOException e) {
@@ -50,7 +35,7 @@ public class DataStorage {
     public Node load() {
         Node root = null;
         try {
-            root = objectMapper.readValue(file, Node.class);
+            root = type.getObjectMapper().readValue(file, Node.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
