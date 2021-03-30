@@ -175,7 +175,7 @@ public class Message {
                 "\n" + get("tree.stats.animals", Node.getLeaves(root).size()) +
                 "\n" + get("tree.stats.statements", Node.getAll(root).size() - Node.getLeaves(root).size()) +
                 "\n" + get("tree.stats.height", Node.height(root)) +
-                "\n" + get("tree.stats.minimum", Node.minDepth(root) - 1) +
+                "\n" + get("tree.stats.minimum", Node.minDepth(root)) +
                 "\n" + get("tree.stats.average", Node.averageDepth(root));
 
 

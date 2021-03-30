@@ -74,14 +74,14 @@ public class Node {
     }
 
     public static int height(Node node) {
-        if (node == null) {
+        if (node.isLeaf()) {
             return 0;
         }
         return Math.max(1 + height(node.yes), 1 + height(node.no));
     }
 
     public static int minDepth(Node node) {
-        if (node == null) {
+        if (node.isLeaf()) {
             return 0;
         }
         return Math.min(1 + minDepth(node.yes), 1 + minDepth(node.no));
